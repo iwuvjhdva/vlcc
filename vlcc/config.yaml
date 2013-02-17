@@ -1,0 +1,45 @@
+# VLCC config
+
+download_url: http://download.videolan.org/pub/videolan/vlc/
+
+versions:
+    1.1.3:
+        distr: squeeze
+        dependencies:
+            - build-essential
+            - libmad0-dev
+            - libavcodec-dev
+            - libavformat-dev
+            - libswscale-dev
+            - libpostproc-dev
+            - libxcb1-dev
+            - libxcb-shm0-dev
+            - libxcb-xv0-dev
+            - libx11-xcb-dev
+            - mesa-common-dev
+            - libqt4-dev
+            - libgcrypt11-dev
+            - liba52-0.7.4-dev
+            - liblua5.1-0-dev
+            - lua5.1
+    2.0.3:
+        distr: wheezy
+        dependencies:
+            - build-essential
+            - libmad0-dev
+            - libavcodec-dev
+            - libavformat-dev
+            - libswscale-dev
+            - libpostproc-dev
+            - libxcb1-dev
+            - libxcb-shm0-dev
+            - libxcb-xv0-dev
+            - libx11-xcb-dev
+            - libdbus-1-dev
+            - libqt4-dev
+            - libxcb-composite0-dev
+            - libasound2-dev
+            - zlib1g-dev
+            - liba52-0.7.4-dev
+            - liblua5.1-0-dev
+            - lua5.1
