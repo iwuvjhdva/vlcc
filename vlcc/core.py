@@ -23,6 +23,6 @@ def fail_with_error(message):
     """
 
     exc_info = getattr(options, 'traceback', False) and any(sys.exc_info())
-    logger.error(message, exc_info=exc_info)
+    logger.critical(message, exc_info=exc_info)
 
     sys.exit(-1)

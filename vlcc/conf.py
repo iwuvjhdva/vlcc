@@ -2,14 +2,14 @@
 
 import yaml
 
-from vlcc.core import fail_with_error
+from .core import fail_with_error
 
 
 # Global configuration dictionary
 config = {}
 
 
-__all__ = 'config', 'load_config',
+__all__ = ['config', 'load_config',]
 
 
 def load_config(config_path):
