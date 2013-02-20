@@ -6,4 +6,4 @@ import core
 import conf
 import build
 import sample
-import cli
+import main
