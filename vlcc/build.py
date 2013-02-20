@@ -2,7 +2,6 @@
 
 from functools import wraps
 
-import time
 import os
 
 import subprocess
@@ -81,15 +80,8 @@ class Builder(object):
         """Waits for the download to finish.
         """
 
-        while True:
-            retval = self.download_proc.poll()
-
-            if retval is None:
-                time.sleep(.1)
-            elif retval != 0:
-                fail_with_error("Download failed :-(")
-            else:
-                return
+        if 0 != self.download_proc.wait():
+            fail_with_error("Download failed :-(")
 
     @build_state('jail_created')
     def create_jail(self):
@@ -143,7 +135,7 @@ class Builder(object):
         """
 
         self.start_download()
-        #self.create_jail()
+        self.create_jail()
         self.finish_download()
         self.unpack()
         self.configure()

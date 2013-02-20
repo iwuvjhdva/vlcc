@@ -37,11 +37,15 @@ class Jail(object):
         @param action: action string to log
         """
 
-        exec_log_path = log_to and os.path.join(self.log_dir, log_to)
+        if log_to is None:
+            exec_log_path = None
+            log_details = ""
+        else:
+            exec_log_path = os.path.join(self.log_dir, log_to)
+            log_details = ", see {1} for details"
 
         if log_message is not None:
-            message = (log_message +
-                       ("" if log_to is None else ", see {1} for details"))
+            message = log_message + log_details
             self.logger.info(message.format(log_message.capitalize(),
                                             exec_log_path))
 
@@ -55,20 +59,18 @@ class Jail(object):
                                           stdout=log_file, stderr=log_file)
 
         if 0 != retcode:
-            message = ("Execution of {0} failed" +
-                       ("" if log_to is None else ", see the log for details"))
-
-            fail_with_error(message.format(command[0]))
+            message = "Execution of {0} failed" + log_details
+            fail_with_error(message.format(command[0], "the log"))
 
     def exec_chroot(self, command, cwd="/", log_to=None, log_message=None):
         """Executes a command with chroot. Accepts same parameters as
         exec_command() method.
         """
 
-        command = ['chroot', self.chroot_dir, 'sh', '-c',
+        command = ['chroot', self.chroot_dir, 'bash', '-c',
                    'cd {0}; {1}'.format(cwd, command)]
 
-        self.exec_command(command, log_to, log_message)
+        return self.exec_command(command, log_to, log_message)
 
     def create(self):
         """Creates a chroot jail with debootstrap.
@@ -77,7 +79,8 @@ class Jail(object):
         command = ['debootstrap']
 
         if 'dependencies' in self.version_config:
-            deps = ['build-essential'] + self.version_config['dependencies']
+            deps = (['build-essential', 'python'] +
+                    self.version_config['dependencies'])
             command.append('--include=' + ",".join(set(deps)))
 
         if 'arch' in self.version_config:
@@ -87,3 +90,6 @@ class Jail(object):
 
         self.exec_command(command, log_to='debootstrap.log',
                           log_message="Creating chroot jail for VLC")
+
+        # Creating vlcc user
+        self.exec_chroot("useradd vlcc")
