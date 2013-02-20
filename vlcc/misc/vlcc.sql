@@ -3,28 +3,28 @@ BEGIN TRANSACTION;
 -- Fancy tables
 
 CREATE TABLE IF NOT EXISTS build (
-    version TEXT PRIMARY KEY,
-    state TEXT NOT NULL
+    version VARCHAR(8) PRIMARY KEY,
+    state VARCHAR(16) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS comparison (
     id INTEGER PRIMARY KEY,
-    movie TEXT,
+    movie VARCHAR(255),
     description TEXT,
-    width INTEGER,
-    height INTEGER,
+    width SMALLINT,
+    height SMALLINT,
     length INTEGER,
-    fps INTEGER,
-    published TEXT
+    fps SMALLINT,
+    performed DATE
 );
 
 CREATE TABLE IF NOT EXISTS sample (
     comparison_build_id INTEGER,
     interval INTEGER,
-    ram INTEGER,
-    threads INTEGER,
-    cpu_percent INTEGER,
-    ram_percent INTEGER,
+    cpu SMALLINT,
+    ram SMALLINT,
+    threads SMALLINT,
+    ram_bytes BIGINT,
 
     FOREIGN KEY (comparison_build_id) REFERENCES comparison_build(id)
 );
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS sample (
 CREATE TABLE IF NOT EXISTS comparison_build (
     id INTEGER PRIMARY KEY,
     comparison_id INTEGER,
-    build_version TEXT,
+    build_version VARCHAR(8),
 
     FOREIGN KEY (comparison_id) REFERENCES comparison(id),
     FOREIGN KEY (build_version) REFERENCES build(version),

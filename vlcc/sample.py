@@ -15,9 +15,12 @@ from .jail import Jail
 __all__ = ['sample', 'compare']
 
 
-def preload_library(lib_name):
-    # ldconfig -v /dev/null | grep -v ^$'\t'
-    pass
+class Sampler(object):
+    def __init__(self, version):
+        pass
+
+    def preload(self, lib_name):
+        pass
 
 
 def sample(version):
@@ -28,9 +31,6 @@ def sample(version):
     """
 
     logger = get_child_logger(version)
-
-    # Setting effective UID to current user's instead of root
-    os.setreuid(0, pwd.getpwnam(os.getlogin()).pw_uid)
 
     jail = Jail(version, logger)
     jail.exec_chroot(['ldconfig', '-v', "/dev/null | grep -v ^$'\t'"])
@@ -44,7 +44,13 @@ def sample(version):
     vlc.dll = ctypes.CDLL(os.path.join(lib_path, 'libvlc.so'))
     vlc.plugin_path = os.path.join(lib_path, 'vlc/plugins')
 
+    # Setting effective UID to current user's instead of root
+    os.setreuid(0, pwd.getpwnam(os.getlogin()).pw_uid)
+
     instance = vlc.Instance()
+
+    # Restoring effective UID
+
     player = instance.media_player_new()
 
     media = instance.media_new(options.movie)
