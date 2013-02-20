@@ -16,6 +16,17 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('vlcc')
 
 
+def get_child_logger(suffix):
+    """Returns new core logger's descendant with the same logging level.
+
+    @param suffix: suffix string
+    """
+    child = logger.getChild(suffix)
+    child.setLevel(logger.level)
+
+    return child
+
+
 def fail_with_error(message):
     """Prints the error message and terminates the program execution.
 
