@@ -198,4 +198,4 @@ def compare():
     db.row_factory()
 
     # Finalizing comparison
-    db.execute("UPDATE comparison SET ready=?", [True])
+    db.execute("UPDATE comparison SET ready=? WHERE id=?", [True, comparison])
