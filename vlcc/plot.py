@@ -53,14 +53,33 @@ class Plot(object):
         self.gnuplot_proc.stdin.write(command, "\n")
 
     def set_labels(self, xlabel="t", ylabel="t"):
+        """Sets X and Y axes labels.
+
+        @param xlabel: X label
+        @param ylabel: X label
+        """
+
         self.command('set xlabel "{0}"\n'
                      'set ylabel "{1}"'.format(xlabel, ylabel))
 
     def set_ranges(self, x_range=None, y_range=None):
+        """Sets X and Y axes ranges.
+
+        @param x_range: X range
+        @param y_range: X range
+        """
+
         x_range and self.command('set xrange "{0}"'.format(x_range))
         y_range and self.command('set yrange "{0}"'.format(y_range))
 
     def plot(self, points, style="first", title=None):
+        """Plots a plot.
+
+        @param points: points tuples list
+        @param style: style name, from 'first' to 'fifth'
+        @param title: plot title
+        """
+
         self.command("plot '-' with lines ls {0} title"
                      .format(style, title or ""))
 
