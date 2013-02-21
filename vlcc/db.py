@@ -6,7 +6,7 @@ import os
 
 import sqlite3
 
-from .core import fail_with_error
+from .core import logger, fail_with_error
 from .conf import config
 
 
@@ -18,7 +18,6 @@ class DB(object):
     """
 
     connection = None
-    cursor = None
 
     def connect(self):
         """Opens a database connection and loads default SQL schema
@@ -31,7 +30,7 @@ class DB(object):
             fail_with_error("Unable to connect to DB, the message was: `{0}`"
                             .format(e.message))
 
-        # Loading SQL schema
+        # Loading the SQL schema
 
         schema_path = os.path.join(os.path.dirname(__file__), 'misc/vlcc.sql')
 
@@ -42,10 +41,12 @@ class DB(object):
             except sqlite3.Error as e:
                 fail_with_error("Unable to load the SQL schema, "
                                 "the message was: `{0}`".format(e.message))
+        self.commit()
+
         self.cursor = self.connection.cursor()
 
-    def execute(self, query, params=None, use_cursor=False):
-        """Executes a query.
+    def execute(self, query, params=None, use_cursor=False, commit=True):
+        """Executes an SQL statement.
 
         @param query: query string
         @param params: params dict
@@ -58,24 +59,31 @@ class DB(object):
         else:
             processor = self.connection
 
+        params_str = unicode(params or "no params")
+
+        logger.debug("Executing an SQL statement `{0}` with {1}"
+                     .format(query, params_str))
+
         try:
-            processor.execute(query, params)
+            cursor = processor.execute(query, params)
         except sqlite3.Error as e:
             fail_with_error("Unable to execute the query {0} with {1}, "
                             "the message was: `{2}`"
-                            .format(query, params or "no params", e.message))
+                            .format(query, params_str, e.message))
+        if commit:
+            self.commit()
+        return cursor
 
     def query(self, query, params=None):
         """Queries the database.
 
         @param query: query string
-        @param params: params dict
+        @param params: params object
 
         @return: sqlite3.Cursor object
         """
 
-        self.execute(query, params, use_cursor=True)
-        return self.cursor
+        return self.execute(query, params, use_cursor=True, commit=False)
 
     def commit(self):
         """Commits current DB transaction.

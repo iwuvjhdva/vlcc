@@ -7,6 +7,7 @@ import os
 from .core import options, get_child_logger, fail_with_error
 from .conf import config
 from .jail import Jail
+from .db import db
 
 
 __all__ = ['build']
@@ -15,12 +16,13 @@ __all__ = ['build']
 def build_state(state):
     """Updates the build state in case of successful execution of the
     decorated method.
+
+    This actually implements build states failback.
     """
+
     def _build_state(method):
         @wraps(method)
-        def __build_state(*args, **kwargs):
-            result = method(*args, **kwargs)
-
+        def __build_state(builder, *args, **kwargs):
             states = ['jail_created',
                       'source_unpacked',
                       'configured',
@@ -28,6 +30,15 @@ def build_state(state):
                       'installed']
 
             assert state in states
+
+            #if builder.state in states:
+            #    index = states.index(builder.state)
+            #    if
+
+            result = method(*args, **kwargs)
+
+            db.execute("UPDATE build WHERE version=? SET state=?",
+                       [builder.version, state])
 
             return result
         return __build_state
@@ -43,10 +54,21 @@ class Builder(object):
 
     def __init__(self, version):
         self.version = version
+        self.state = None
         self.build_logger = get_child_logger(version)
         self.chroot_src_dir = os.path.join('/usr/local/src', 'vlc-' + version)
 
         self.jail = Jail(version, self.build_logger)  # chroot jail object
+
+        # Getting current build version
+
+        cursor = db.query("SELECT state FROM build WHERE version=?", [version])
+        res = cursor.fetchone()
+
+        if res is None:
+            db.execute("INSERT INTO build (version) VALUES (?)", [version])
+        else:
+            self.state = res[0]
 
     def start_download(self):
         """Downloads the sources archive with wget.

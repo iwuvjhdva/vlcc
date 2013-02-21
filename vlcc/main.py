@@ -17,7 +17,7 @@ from .core import logger, options, initialize, fail_with_error
 from .conf import config
 
 from .build import build
-from .sample import sample, compare
+from .compare import compare
 
 
 def get_dependencies():
@@ -110,14 +110,11 @@ def main():
     pool = Pool()
     pool.map_async(build, options.versions).get(timeout=sys.maxint)
 
+    # Uncomment for sequential build
     #[build(version)
     # for version in options.versions]
 
-    # Measuring
-    [sample(version)
-     for version in options.versions]
-
     # Comparing
-    compare(options.versions)
+    compare()
 
     logger.info("Finished.")

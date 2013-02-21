@@ -9,18 +9,37 @@ import psutil
 
 from .core import options, get_child_logger, fail_with_error
 from .jail import Jail
+from .db import db
 
 
-__all__ = ['sample', 'compare']
+__all__ = ['compare']
 
 
 class Sampler(object):
-    def __init__(self, version):
+    """VLC version measurements class.
+    """
+
+    def __init__(self, version, comparison):
+        """Initializes the sampler.
+
+        @param version: VLC version string
+        @param comparison: comparison ID
+        """
+
         self.sample_logger = get_child_logger(version)
         self.movie_filename = os.path.basename(options.movie)
         self.jail = Jail(version, self.sample_logger)
 
-        # Hardlinking the dummy player and the video into the jail
+        cursor = db.execute("INSERT INTO comparison_build "
+                            "(comparison_id, build_version) "
+                            "VALUES(?, ?)",
+                            [comparison, version])
+
+        self.comparison_build = cursor.lastrowid
+
+    def link(self):
+        """Hardlinks the dummy player and the video into the jail.
+        """
 
         # TODO: copy files to build_dir before making links as hard
         # links cannot cross filesystems
@@ -48,52 +67,64 @@ class Sampler(object):
         """Runs the dummy player.
         """
 
-        command = ['python', 'play.py', self.movie_filename]
+        self.sample_logger.info("Playing " + options.movie)
 
+        command = ['python', 'play.py', self.movie_filename]
         self.process = self.jail.exec_chroot(command,
                                              async=True, userspec='vlcc:vlcc',
                                              stdout=subprocess.PIPE)
 
     def run(self):
+        """Runner method.
+
+        Launches VLC instance, measures, logs, saves and plots
+        performance/resource related parameters while playing a movie.
+        """
+
+        self.link()
         self.play()
 
         process = psutil.Process(self.process.pid)
 
         counter = itertools.count()
-        retcode = None
 
-        while retcode is None:
-            retcode = self.process.poll()
-
+        while self.process.poll() is None:
             interval = next(counter)
             cpu = int(process.get_cpu_percent(interval=1.))
             ram = int(process.get_memory_percent())
+            ram_bytes = process.get_memory_info().rss
             threads = process.get_num_threads()
 
-            if options.verbose:
-                message = ("CPU: {0[cpu]}%, "
-                           "RAM: {0[ram]}%, threads: {0[threads]}")
+            message = ("CPU: {0[cpu]}%, "
+                       "RAM: {0[ram]}%, threads: {0[threads]}")
 
-                self.sample_logger.info(message.format(dict(
-                    interv=interval,
-                    cpu=cpu,
-                    ram=ram,
-                    threads=threads)))
+            params = dict(
+                id=self.comparison_build,
+                interv=interval,
+                cpu=cpu,
+                ram=ram,
+                ram_b=ram_bytes,
+                threads=threads
+            )
+            self.sample_logger.info(message.format(params))
 
-        if 0 != retcode:
+            db.execute("INSERT INTO sample VALUES "
+                       "(:id, :interv, :cpu, :ram, :threads, :ram_b)",
+                       params)
+
+        if 0 != self.process.returncode:
             fail_with_error("Unable to start video playback "
                             "for unknown reason")
 
 
-def sample(version):
-    """Launches VLC instance, measures, logs, saves and plots
-    performance/resource related parameters while playing a movie.
+def compare():
+    """Compares given VLC versions.
 
-    @param version: VLC version string
+    @param versions: versions list
     """
 
-    return Sampler(version).run()
+    cursor = db.execute("INSERT INTO comparison (movie) VALUES (?)",
+                        (options.movie,))
 
-
-def compare(versions):
-    pass
+    [Sampler(version, cursor.lastrowid).run()
+     for version in options.versions]

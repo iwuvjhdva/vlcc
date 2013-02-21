@@ -4,7 +4,7 @@ BEGIN TRANSACTION;
 
 CREATE TABLE IF NOT EXISTS build (
     version VARCHAR(8) PRIMARY KEY,
-    state VARCHAR(16) NOT NULL
+    state VARCHAR(16)
 );
 
 CREATE TABLE IF NOT EXISTS comparison (
@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS comparison (
     height SMALLINT,
     length INTEGER,
     fps SMALLINT,
-    performed DATE
+    ready BOOLEAN DEFAULT 0,
+    performed DATE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS sample (
