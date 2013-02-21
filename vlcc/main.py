@@ -13,8 +13,8 @@ import logging
 from argparse import ArgumentParser
 
 from .core import __version__, __description__
-from .core import logger, options, fail_with_error
-from .conf import config, load_config
+from .core import logger, options, initialize, fail_with_error
+from .conf import config
 
 from .build import build
 from .sample import sample, compare
@@ -62,10 +62,13 @@ def main():
     argparser.add_argument('-v', '--version', action="version",
                            version=__version__,
                            help="print program version")
-    argparser.add_argument('-c', '--config', dest='config', type=load_config,
+    argparser.add_argument('-c', '--config', dest='config',
+                           default="./config.yaml",
                            help="config file path, `config.yaml` by default")
 
     argparser.parse_args(namespace=options)
+
+    initialize(options.config)
 
     if os.getuid() != 0:
         fail_with_error("Root privileges are required to run this script")

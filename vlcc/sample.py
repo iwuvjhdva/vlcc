@@ -21,6 +21,10 @@ class Sampler(object):
         self.jail = Jail(version, self.sample_logger)
 
         # Hardlinking the dummy player and the video into the jail
+
+        # TODO: copy files to build_dir before making links as hard
+        # links cannot cross filesystems
+
         misc = os.path.join(os.path.dirname(__file__), 'misc/')
         chdir = self.jail.chroot_dir + '/'
 
@@ -32,21 +36,23 @@ class Sampler(object):
         )
 
         for src, dest in hardlinks:
-            try:
-                os.link(src, dest)
-            except OSError:
-                pass
+            if not os.path.exists(dest):
+                try:
+                    os.link(src, dest)
+                except OSError as e:
+                    fail_with_error("Unable to create hard link from {0} to "
+                                    "{1}, the message was: `{2}`"
+                                    .format(src, dest, e.message))
 
     def play(self):
-        """Puts the dummy player into the jail and runs it.
+        """Runs the dummy player.
         """
 
-        # Calling the player
-        command = ['chroot', '--userspec', 'vlcc:vlcc',
-                   self.jail.chroot_dir, 'python', 'play.py',
-                   self.movie_filename]
+        command = ['python', 'play.py', self.movie_filename]
 
-        self.process = subprocess.Popen(command, stdout=subprocess.PIPE)
+        self.process = self.jail.exec_chroot(command,
+                                             async=True, userspec='vlcc:vlcc',
+                                             stdout=subprocess.PIPE)
 
     def run(self):
         self.play()

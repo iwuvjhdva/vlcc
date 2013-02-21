@@ -4,8 +4,6 @@ from functools import wraps
 
 import os
 
-import subprocess
-
 from .core import options, get_child_logger, fail_with_error
 from .conf import config
 from .jail import Jail
@@ -64,16 +62,7 @@ class Builder(object):
         command = ['wget', '-c', '-P', options.build_dir, '-O',
                    self.archive_path, self.download_url]
 
-        self.jail.debug_command(command)
-
-        if options.verbose:
-            output = None
-        else:
-            output = subprocess.PIPE
-
-        self.download_proc = subprocess.Popen(command,
-                                              stdout=output, stderr=output)
-
+        self.download_proc = self.jail.exec_command(command, async=True)
         self.build_logger.info("Starting download from " + self.download_url)
 
     def finish_download(self):
@@ -111,24 +100,24 @@ class Builder(object):
         configure_args = config['versions'][self.version].get('configure', '')
         command = './configure --prefix=/usr ' + configure_args
 
-        self.jail.exec_chroot(command,
-                              cwd=self.chroot_src_dir,
-                              log_to='configure.log',
-                              log_message="Configuring VLC")
+        self.jail.log_chroot(command,
+                             cwd=self.chroot_src_dir,
+                             log_to='configure.log',
+                             log_message="Configuring VLC")
 
     @build_state('compiled')
     def make(self):
-        self.jail.exec_chroot('make',
-                              cwd=self.chroot_src_dir,
-                              log_to='make.log',
-                              log_message="Compiling VLC")
+        self.jail.log_chroot('make',
+                             cwd=self.chroot_src_dir,
+                             log_to='make.log',
+                             log_message="Compiling VLC")
 
     @build_state('installed')
     def install(self):
-        self.jail.exec_chroot('make install',
-                              cwd=self.chroot_src_dir,
-                              log_to='install.log',
-                              log_message="Installing VLC")
+        self.jail.log_chroot('make install',
+                             cwd=self.chroot_src_dir,
+                             log_to='install.log',
+                             log_message="Installing VLC")
 
     def run(self):
         """This one makes the whole magic.
@@ -149,4 +138,4 @@ def build(version):
     @param version: VLC version string
     """
 
-    return Builder(version).run()
+    #return Builder(version).run()

@@ -5,7 +5,6 @@ import argparse
 
 import logging
 
-
 __description__ = "VLC versions measurement and comparison tool"
 __version__ = "0.01"
 
@@ -14,6 +13,19 @@ options = argparse.Namespace()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('vlcc')
+
+
+def initialize(config_path):
+    """Initializes the core.
+
+    @param config_path: config path string
+    """
+
+    from .conf import load_config
+    # from .db import db
+
+    load_config(config_path)
+    # db.connect()
 
 
 def get_child_logger(suffix):

@@ -26,51 +26,94 @@ class Jail(object):
         except OSError:
             pass
 
-    def debug_command(self, command):
-        self.logger.debug("Executing `{0}`".format(" ".join(command)))
-
-    def exec_command(self, command, log_to=None, log_message=None):
+    def exec_command(self, command, async=False, **popen_kwargs):
         """Executes a command.
 
-        @param command: command string
+        @param command: command string or sequence
+        @param async: returns immediately if True
+        @popen_kwargs: subprocess.Popen kwargs
+
+        @return: process instance
+        """
+        self.logger.debug("Executing `{0}`".format(" ".join(command)))
+
+        process = subprocess.Popen(command, **popen_kwargs)
+
+        if not async:
+            if 0 != process.wait():
+                fail_with_error("Execution of {0} failed".format(command[0]))
+
+        return process
+
+    def exec_chroot(self, command, cwd=None, userspec=None,
+                    async=False, **popen_kwargs):
+        """Executes a command with chroot.
+
+        @param command: command string or sequence
+        @param cwd: chroot working directory string
+        @param userspec: `USER[:GROUP]` string to use
+        @param async: returns immediately if True
+        @popen_kwargs: subprocess.Popen kwargs
+        """
+
+        if isinstance(command, basestring):
+            command = [command]
+
+        cmd = ['chroot']
+
+        if userspec is not None:
+            cmd += ['--userspec=' + userspec]
+
+        cmd += [self.chroot_dir]
+
+        if cwd is not None:
+            cmd += ['bash', '-c', 'cd {0}; {1}'
+                    .format(cwd, " ".join(command))]
+        else:
+            cmd += command
+
+        return self.exec_command(cmd, async, **popen_kwargs)
+
+    def _log_exec(self, method, log_to, log_message, **kwargs):
+        """Calls the method with kwargs passed and logs the results
+        into a file.
+
+        @param method: either self.exec_chroot or self.exec_command
         @param log_to: log file name
-        @param action: action string to log
+        @param log_message: message string to log
         """
 
-        if log_to is None:
-            exec_log_path = None
-            log_details = ""
-        else:
-            exec_log_path = os.path.join(self.log_dir, log_to)
-            log_details = ", see {1} for details"
+        log_path = os.path.join(self.log_dir, log_to)
 
-        if log_message is not None:
-            message = log_message + log_details
-            self.logger.info(message.format(log_message.capitalize(),
-                                            exec_log_path))
+        self.logger.info("{0}, see {1} for details"
+                         .format(log_message.capitalize(), log_path))
 
-        self.debug_command(command)
+        with open(log_path, 'wt') as log_file:
+            return method(stdout=log_file, stderr=log_file, **kwargs)
 
-        if log_to is None:
-            retcode = subprocess.call(command)
-        else:
-            with open(exec_log_path, 'wt') as log_file:
-                retcode = subprocess.call(command,
-                                          stdout=log_file, stderr=log_file)
+    def log_command(self, command, log_to, log_message):
+        """Executes a command and logs the results into a file.
 
-        if 0 != retcode:
-            message = "Execution of {0} failed" + log_details
-            fail_with_error(message.format(command[0], "the log"))
-
-    def exec_chroot(self, command, cwd="/", log_to=None, log_message=None):
-        """Executes a command with chroot. Accepts same parameters as
-        exec_command() method.
+        @param command: command string or sequence
+        @param log_to: log file name
+        @param log_message: message string to log
         """
 
-        command = ['chroot', self.chroot_dir, 'bash', '-c',
-                   'cd {0}; {1}'.format(cwd, command)]
+        kwargs = dict(command=command)
+        return self._log_exec(self.exec_command, log_to, log_message, **kwargs)
 
-        return self.exec_command(command, log_to, log_message)
+    def log_chroot(self, command, log_to, log_message,
+                   cwd=None, userspec=None):
+        """Executes a chroot command and logs the results into a file.
+
+        @param command: command string or sequence
+        @param log_to: log file name
+        @param log_message: message string to log
+        @param cwd: chroot working directory string
+        """
+
+        kwargs = dict(command=command, cwd=cwd, userspec=userspec)
+        return self._log_exec(self.exec_chroot, log_to, log_message, **kwargs)
 
     def create(self):
         """Creates a chroot jail with debootstrap.
@@ -88,8 +131,8 @@ class Jail(object):
 
         command += [self.version_config['distr'], self.chroot_dir]
 
-        self.exec_command(command, log_to='debootstrap.log',
-                          log_message="Creating chroot jail for VLC")
+        self.log_command(command, log_to='debootstrap.log',
+                         log_message="Creating chroot jail for VLC")
 
         # Creating vlcc user
-        self.exec_chroot("useradd vlcc")
+        self.exec_chroot(['useradd', 'vlcc'])
