@@ -124,12 +124,12 @@ class Builder(object):
         """
 
         self.start_download()
-        self.create_jail()
+        #self.create_jail()
         self.finish_download()
-        self.unpack()
-        self.configure()
-        self.make()
-        self.install()
+        #self.unpack()
+        #self.configure()
+        #self.make()
+        #self.install()
 
 
 def build(version):
@@ -138,4 +138,4 @@ def build(version):
     @param version: VLC version string
     """
 
-    #return Builder(version).run()
+    return Builder(version).run()

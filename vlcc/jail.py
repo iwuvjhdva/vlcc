@@ -37,6 +37,13 @@ class Jail(object):
         """
         self.logger.debug("Executing `{0}`".format(" ".join(command)))
 
+        output_specified = (set(['stdout', 'stderr'])
+                            .issubset(popen_kwargs.keys()))
+
+        # Suppressing the output in non-verbose mode
+        if not options.verbose and not output_specified:
+            popen_kwargs['stdout'] = popen_kwargs['stderr'] = subprocess.PIPE
+
         process = subprocess.Popen(command, **popen_kwargs)
 
         if not async:
