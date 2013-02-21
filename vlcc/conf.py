@@ -25,5 +25,3 @@ def load_config(config_path):
         fail_with_error("Error parsing {0}, specify --traceback option for "
                         "details".format(config_path))
     config.update(cfg)
-
-    return config_path

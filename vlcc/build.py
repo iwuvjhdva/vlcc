@@ -35,8 +35,8 @@ def build_state(state):
             if states.index(state) > states.index(builder.state):
                 result = method(builder, *args, **kwargs)
 
-                db.execute("UPDATE build WHERE version=? SET state=?",
-                           [builder.version, state])
+                db.execute("UPDATE build SET state=? WHERE version=?",
+                           [state, builder.version])
                 return result
             else:
                 builder.build_logger.debug("Skipping build state `{0}`"

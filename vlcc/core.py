@@ -31,7 +31,7 @@ def initialize():
     from .conf import load_config
     from .db import db
 
-    # Adding necessary options to argparser
+    # Adding common options to argparser
 
     argparser.add_argument('--verbose', action="store_true",
                            dest='verbose',
