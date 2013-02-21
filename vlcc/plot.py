@@ -100,8 +100,7 @@ class Plot(object):
         for plot in plots:
             points = ("{0} {1}".format(*point) for point in plot['points'])
             self.command("\n".join(points))
-            self.command('e')
-        self.command('', flush=True)
+            self.command('e', flush=True)
 
     def plot(self, points, style=1, title=None):
         """Plots a plot.

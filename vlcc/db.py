@@ -53,15 +53,12 @@ class DB(object):
                                 "the message was: `{0}`".format(e.message))
         self.commit()
 
-        self.cursor = self.connection.cursor()
-
     def row_factory(self, factory=None):
         """Sets row factory, i. e., vlcc.db.dict_factory
 
         @param factory: factory function
         """
         self.connection.row_factory = factory
-        self.cursor = self.connection.cursor()
 
     def execute(self, query, params=None, use_cursor=False, commit=True):
         """Executes an SQL statement.
