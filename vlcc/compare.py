@@ -29,6 +29,7 @@ class Sampler(object):
         self.sample_logger = get_child_logger(version)
         self.movie_filename = os.path.basename(options.movie)
         self.jail = Jail(version, self.sample_logger)
+        self.movie_info = {}
 
         cursor = db.execute("INSERT INTO comparison_build "
                             "(comparison_id, build_version) "
@@ -116,6 +117,8 @@ class Sampler(object):
             fail_with_error("Unable to start video playback "
                             "for unknown reason")
 
+        return self.movie_info
+
 
 def compare():
     """Compares given VLC versions.
@@ -126,5 +129,12 @@ def compare():
     cursor = db.execute("INSERT INTO comparison (movie) VALUES (?)",
                         (options.movie,))
 
-    [Sampler(version, cursor.lastrowid).run()
+    comparison = cursor.lastrowid
+
+    [Sampler(version, comparison).run()
      for version in options.versions]
+
+    # Write movie info
+
+    # Finalizing comparison
+    db.execute("UPDATE comparison SET ready=?", [True])
