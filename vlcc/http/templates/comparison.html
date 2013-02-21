@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if comparison %}
+<h1>VLC {{ comparison.versions }} comparison</h1>
+<p>Movie file name: {{ comparison.movie }}.</p>
+
+<h2>CPU</h2>
+<img src="{{ url_for('image', filename=comparison.id) }}/cpu.png" />
+
+<h2>RAM</h2>
+<img src="{{ url_for('image', filename=comparison.id) }}/ram.png" />
+
+<h2>Threads</h2>
+<img src="{{ url_for('image', filename=comparison.id) }}/threads.png" />
+{% else %}
+<h1>No comparisons found</h1>
+{% endif %}
+
+{% endblock %}

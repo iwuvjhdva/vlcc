@@ -131,8 +131,8 @@ def compare():
     @param versions: versions list
     """
 
-    cursor = db.execute("INSERT INTO comparison (movie) VALUES (?)",
-                        (options.movie,))
+    cursor = db.execute("INSERT INTO comparison (movie, ready) VALUES (?, ?)",
+                        (options.movie, False))
 
     comparison = cursor.lastrowid
 
