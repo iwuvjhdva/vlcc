@@ -19,8 +19,10 @@ options = argparse.Namespace()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('vlcc')
 
+argparser = argparse.ArgumentParser(description=__description__)
 
-def initialize(config_path):
+
+def initialize():
     """Initializes the core.
 
     @param config_path: config path string
@@ -29,7 +31,31 @@ def initialize(config_path):
     from .conf import load_config
     from .db import db
 
-    load_config(config_path)
+    # Adding necessary options to argparser
+
+    argparser.add_argument('--verbose', action="store_true",
+                           dest='verbose',
+                           help="force verbose output")
+    argparser.add_argument('-d', '--debug', action="store_true",
+                           dest='debug', default=False,
+                           help="enable debug mode")
+    argparser.add_argument('-t', '--traceback', action="store_true",
+                           dest='traceback',
+                           help="dump traceback on errors")
+    argparser.add_argument('-v', '--version', action="version",
+                           version=__version__,
+                           help="print program version")
+    argparser.add_argument('-c', '--config', dest='config',
+                           default="./config.yaml",
+                           help="config file path, `config.yaml` by default")
+
+    argparser.parse_args(namespace=options)
+
+    if options.debug:
+        logger.setLevel(logging.DEBUG)
+        logger.info("Switched to debug mode")
+
+    load_config(options.config)
     db.connect()
 
 
