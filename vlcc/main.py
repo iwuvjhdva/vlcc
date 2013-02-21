@@ -73,14 +73,6 @@ def main():
     if os.getuid() != 0:
         fail_with_error("Root privileges are required to run this script")
 
-    try:
-        login = os.getlogin()
-    except OSError:
-        fail_with_error("Controlling terminal is not available")
-    else:
-        if login == 'root':
-            fail_with_error("VLC cannot be run as root, sorry")
-
     if options.debug:
         logger.setLevel(logging.DEBUG)
         logger.info("Switched to debug mode")
