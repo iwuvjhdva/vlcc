@@ -1,5 +1,6 @@
 # VLCC config
 
+db: ./vlcc.db
 download_url: http://download.videolan.org/pub/videolan/vlc/
 
 versions:

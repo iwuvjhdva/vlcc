@@ -9,7 +9,7 @@ from .core import fail_with_error
 config = {}
 
 
-__all__ = ['config', 'load_config',]
+__all__ = ['config', 'load_config']
 
 
 def load_config(config_path):

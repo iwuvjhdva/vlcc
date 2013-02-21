@@ -5,8 +5,13 @@ import argparse
 
 import logging
 
+
 __description__ = "VLC versions measurement and comparison tool"
 __version__ = "0.01"
+
+
+__all__ = ['options', 'logger', 'initialize', 'get_child_logger',
+           'fail_with_error']
 
 
 options = argparse.Namespace()
@@ -22,10 +27,10 @@ def initialize(config_path):
     """
 
     from .conf import load_config
-    # from .db import db
+    from .db import db
 
     load_config(config_path)
-    # db.connect()
+    db.connect()
 
 
 def get_child_logger(suffix):

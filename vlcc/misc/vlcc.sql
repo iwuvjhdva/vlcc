@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS comparison_build (
 
 -- Awesome indexes
 
-CREATE INDEX IF NOT EXISTS comparison_published_index ON comparison (published);
+CREATE INDEX IF NOT EXISTS comparison_performed_index ON comparison (performed);
 
 CREATE INDEX IF NOT EXISTS sample_comparison_build_id_index ON sample (comparison_build_id);
 
