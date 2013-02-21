@@ -111,7 +111,7 @@ def main():
     pool = Pool()
     pool.map_async(build, options.versions).get(timeout=sys.maxint)
 
-    # Uncomment for sequential build
+    # Uncomment for building sequentially
     #[build(version)
     # for version in options.versions]
 

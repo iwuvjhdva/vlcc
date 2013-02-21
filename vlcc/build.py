@@ -23,7 +23,8 @@ def build_state(state):
     def _build_state(method):
         @wraps(method)
         def __build_state(builder, *args, **kwargs):
-            states = ['jail_created',
+            states = [None,
+                      'jail_created',
                       'source_unpacked',
                       'configured',
                       'compiled',
@@ -31,16 +32,15 @@ def build_state(state):
 
             assert state in states
 
-            #if builder.state in states:
-            #    index = states.index(builder.state)
-            #    if
+            if states.index(state) > states.index(builder.state):
+                result = method(builder, *args, **kwargs)
 
-            result = method(*args, **kwargs)
-
-            db.execute("UPDATE build WHERE version=? SET state=?",
-                       [builder.version, state])
-
-            return result
+                db.execute("UPDATE build WHERE version=? SET state=?",
+                           [builder.version, state])
+                return result
+            else:
+                builder.build_logger.debug("Skipping build state `{0}`"
+                                           .format(state))
         return __build_state
     return _build_state
 
@@ -146,12 +146,12 @@ class Builder(object):
         """
 
         self.start_download()
-        #self.create_jail()
+        self.create_jail()
         self.finish_download()
-        #self.unpack()
-        #self.configure()
-        #self.make()
-        #self.install()
+        self.unpack()
+        self.configure()
+        self.make()
+        self.install()
 
 
 def build(version):
