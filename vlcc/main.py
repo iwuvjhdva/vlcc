@@ -106,6 +106,28 @@ def main():
                             ver=", ".join(missing_versions),
                             config=options.config)
                         ))
+
+    """
+    # Plotting experiment
+    from .plot import Plot
+    from random import randint
+
+    plot = Plot(png='foo.png')
+
+    points1 = [
+        (randint(0, 100), randint(0, 100))
+        for index in xrange(100)
+    ]
+    points2 = [
+        (randint(0, 100), randint(0, 100))
+        for index in xrange(100)
+    ]
+    plot.plot_multiple([dict(points=points1, style=1, title="1.1.3"),
+                        dict(points=points2, style=2, title="2.0.3")])
+    del plot
+    sys.exit()
+    """
+
     # Building
     pool = Pool()
     pool.map_async(build, options.versions).get(timeout=sys.maxint)

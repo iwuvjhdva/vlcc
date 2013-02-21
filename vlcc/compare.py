@@ -9,7 +9,9 @@ import psutil
 
 from .core import options, get_child_logger, fail_with_error
 from .jail import Jail
-from .db import db
+from .db import db, dict_factory
+
+from .plot import Plot
 
 
 __all__ = ['compare']
@@ -26,6 +28,7 @@ class Sampler(object):
         @param comparison: comparison ID
         """
 
+        self.version = version
         self.sample_logger = get_child_logger(version)
         self.movie_filename = os.path.basename(options.movie)
         self.jail = Jail(version, self.sample_logger)
@@ -96,8 +99,9 @@ class Sampler(object):
             ram_bytes = process.get_memory_info().rss
             threads = process.get_num_threads()
 
-            message = ("CPU: {0[cpu]}%, "
-                       "RAM: {0[ram]}%, threads: {0[threads]}")
+            message = ("Interval: {0[interv]}, CPU: {0[cpu]}%, "
+                       "RAM: {0[ram]}%, RAM: {0[ram_b]} bytes, "
+                       "threads: {0[threads]}")
 
             params = dict(
                 id=self.comparison_build,
@@ -111,13 +115,14 @@ class Sampler(object):
 
             db.execute("INSERT INTO sample VALUES "
                        "(:id, :interv, :cpu, :ram, :threads, :ram_b)",
-                       params)
+                       params, commit=False)
 
+        db.commit()
         if 0 != self.process.returncode:
             fail_with_error("Unable to start video playback "
                             "for unknown reason")
 
-        return self.movie_info
+        return self
 
 
 def compare():
@@ -131,10 +136,66 @@ def compare():
 
     comparison = cursor.lastrowid
 
-    [Sampler(version, comparison).run()
-     for version in options.versions]
+    samplers = [Sampler(version, comparison).run()
+                for version in options.versions]
 
     # Write movie info
+    # ...
+
+    db.row_factory(dict_factory)
+
+    # Plotting comparison results
+
+    plots = [
+        dict(
+            name='cpu',
+            title="CPU comparison",
+        ),
+        dict(
+            name='ram',
+            title="RAM comparison",
+        ),
+        dict(
+            name='threads',
+            title="Threads count comparison",
+        ),
+    ]
+
+    for plot_data in plots:
+        png_path = '{0}/{1}.png'.format(comparison, plot_data['name'])
+        plot = Plot(png=png_path, title=plot_data['title'])
+
+        # Draw a plot for each specific VLC version
+
+        counter = itertools.count(1)
+
+        graph_list = []
+
+        for sampler in samplers:
+            cursor = db.query("SELECT s.interval, s.cpu, s.ram, s.threads "
+                              "FROM sample s, comparison_build cb, "
+                              "     comparison c "
+                              "WHERE s.comparison_build_id=cb.id "
+                              "AND cb.comparison_id=c.id "
+                              "AND c.id=? "
+                              "AND cb.build_version=?",
+                              [comparison, sampler.version])
+
+            points = (
+                (row['interval'], row[plot_data['name']])
+                for row in cursor
+            )
+
+            graph_list.append(dict(
+                title="VLC {0}".format(sampler.version),
+                style=next(counter),
+                points=points,
+            ))
+
+        plot.plot_multiple(graph_list)
+        del plot
+
+    db.row_factory()
 
     # Finalizing comparison
     db.execute("UPDATE comparison SET ready=?", [True])

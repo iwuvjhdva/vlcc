@@ -10,7 +10,17 @@ from .core import logger, fail_with_error
 from .conf import config
 
 
-__all__ = ['db']
+__all__ = ['db', 'dict_factory']
+
+
+def dict_factory(cursor, row):
+    """Dictionary row factory function.
+    """
+
+    ret = {}
+    for index, column in enumerate(cursor.description):
+        ret[column[0]] = row[index]
+    return ret
 
 
 class DB(object):
@@ -45,6 +55,14 @@ class DB(object):
 
         self.cursor = self.connection.cursor()
 
+    def row_factory(self, factory=None):
+        """Sets row factory, i. e., vlcc.db.dict_factory
+
+        @param factory: factory function
+        """
+        self.connection.row_factory = factory
+        self.cursor = self.connection.cursor()
+
     def execute(self, query, params=None, use_cursor=False, commit=True):
         """Executes an SQL statement.
 
@@ -55,7 +73,7 @@ class DB(object):
         """
 
         if use_cursor:
-            processor = self.cursor
+            processor = self.connection.cursor()
         else:
             processor = self.connection
 
@@ -97,7 +115,9 @@ class DB(object):
                             "the message was: `{0}`".format(e.message))
 
     def __del__(self):
-        self.connection.close()
+        if self.connection is not None:
+            self.connection.commit()
+            self.connection.close()
 
 
 db = DB()
