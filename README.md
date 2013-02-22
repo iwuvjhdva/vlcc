@@ -76,7 +76,7 @@ For advanced usage information, run the scripts with _--help_ option.
 
 Note that VLCC has failback functionality, so you don't have to repeat all the previous build states on each run.
 
-The available build states which describe the atomicity of the failback functionality are: 'jail_created', 'source_unpacked', 'configured', 'compiled', 'installed'.
+The available build states which describe the atomicity of the failback functionality are: **jail_created**, **source_unpacked**, **configured**, **compiled**, **installed**.
 
 
 So it goes. Feel free to ask any questions.
