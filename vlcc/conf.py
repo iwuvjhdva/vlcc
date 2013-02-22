@@ -28,7 +28,7 @@ def load_config(config_path):
 
         try:
             shutil.copy2(cfg_path, '.')
-        except OSError:
+        except IOError:
             pass
         else:
             config_path = './config.yaml'
