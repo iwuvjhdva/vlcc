@@ -29,16 +29,16 @@ Note that you should have setuptools package installed in order to install all t
 If you don't have setuptools, you'll need psutil, flask, PyYAML and pysqlite to install.
 
 Well, for now your system was enriched with the vlcc lib and two binaries:
-*   vlcc-run does all the building and comparison job
-*   vlcc-http is a simple HTTP server which hosts the VLCC Web page
+*   _vlcc-run_ does all the building and comparison job
+*   _vlcc-http_ is a simple HTTP server which hosts the VLCC Web page
 
 Configuration
 -------------
-In order to run, debootstrap, gnuplot and wget packages are required by VLCC runner script (*vlcc-run*).
+In order to run, debootstrap, gnuplot and wget packages are required by VLCC runner script (_vlcc-run_).
 
 The script will warn you If any of these packages are absent.
 
-Configuration file (usually config.yaml) can be specified with -c or --config option to both vlcc-run and _vlcc-http_ scripts.
+Configuration file (usually config.yaml) can be specified with -c or --config option to both _vlcc-run_ and _vlcc-http_ scripts.
 
 If you don't have one, both scripts will try to create its basic reincarnation on first run in current directory.
 
@@ -46,16 +46,16 @@ Configuration with config.yaml is quite simple and intuitive, if you want to cha
 
 Note that, using the default config, the database file and images folder will be created in current directory.
 
-Also note that both vlcc-http and vlcc-run should use the same config (nevermind, just run them both in one directory).
+Also note that both _vlcc-http_ and _vlcc-run_ should use the same config (nevermind, just run them both in one directory).
 
 Usage
 -----
 
-Note that root privileges are required to run vlcc-run since debootstrap & chroot do need them.
+Note that root privileges are required to run _vlcc-run_ since debootstrap & chroot do need them.
 
 I've actually spent some time on playing with fakeroot/fakechroot stuff but it eventually doesn't work properly, so run with sudo.
 
-The very basic launch of vlcc-run script follows:
+The very basic launch of _vlcc-run_ script follows:
 ```bash
 $ sudo vlcc-run <video_file_path> 1.1.3 2.0.3
 ```
@@ -64,7 +64,7 @@ Where 1.1.3 and 2.0.3 are sample VLC versions available in the default config fi
 
 This will create ./build/ dir in current directory and will start to make chroot jails, configuring, compiling, installing and comparing.
 
-For vlcc-http just do
+For _vlcc-http_ just do
 ```bash
 $ vlcc-http
 ```
