@@ -31,10 +31,10 @@
                 <div class="span3">
                     <div class="well sidebar-nav">
                         <ul class="nav nav-list">
-                            <li class="nav-header">Last 10 comparisons</li>
+                            <li class="nav-header">Last comparisons</li>
                             {% for entry in menu %}
                             <li {% if entry.is_active %}class="active"{% endif %}>
-                                <a href="{{ url_for('comparison', comparison_id=entry.id) }}">{{ entry.title }}</a>
+                            <a href="{{ url_for('comparison', comparison_id=entry.id) }}">{{ entry.performed}} &#151; {{ entry.versions }}</a>
                             </li>
                             {% endfor %}
                         </ul>

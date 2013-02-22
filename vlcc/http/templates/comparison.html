@@ -1,9 +1,38 @@
 {% extends "base.html" %}
 
+{% block title %}
+VLC {{ comparison.versions }} comparison &#151; {{ comparison.performed }}
+{% endblock %}
+
 {% block content %}
 {% if comparison %}
 <h1>VLC {{ comparison.versions }} comparison</h1>
-<p>Movie file name: {{ comparison.movie }}.</p>
+<div class="well">
+<p>Movie file name: <strong>{{ comparison.movie }}</strong>.</p>
+<p>Performed on {{ comparison.performed }}.
+</div>
+
+<h2>Overview</h2>
+<table class="table">
+    <thead>
+        <th>Version</th>
+        <th>Avg. CPU usage, %</th>
+        <th>Avg. RAM usage, %</th>
+        <th>Avg. RAM usage, bytes</th>
+        <th>Avg. threads count</th>
+    </thead>
+    <tbody>
+        {% for overview in overviews %}
+        <tr>
+            <td>VLC {{ overview.version }}</td>
+            <td>{{ overview.avg_cpu }}</td>
+            <td>{{ overview.avg_ram }}</td>
+            <td>{{ overview.avg_ram_bytes|round|int }}</td>
+            <td>{{ overview.avg_threads|round|int }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 <h2>CPU</h2>
 <img src="{{ url_for('image', filename=comparison.id) }}/cpu.png" />

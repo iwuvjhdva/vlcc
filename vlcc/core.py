@@ -21,7 +21,7 @@ logger = logging.getLogger('vlcc')
 
 argparser = argparse.ArgumentParser(description=__description__)
 
-# An exit function to call on failure
+# Exit function to call on failure
 _exit_func = lambda: sys.exit(-1)
 
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import collections
 import itertools
 
 import os
@@ -90,27 +91,32 @@ class Sampler(object):
 
         process = psutil.Process(self.process.pid)
 
-        counter = itertools.count()
+        interval_counter = itertools.count()
+        avg_counter = collections.Counter()
 
         while self.process.poll() is None:
-            interval = next(counter)
-            cpu = int(process.get_cpu_percent(interval=1.))
-            ram = int(process.get_memory_percent())
+            interval = next(interval_counter)
+            cpu = process.get_cpu_percent(interval=1.)
+            ram = process.get_memory_percent()
             ram_bytes = process.get_memory_info().rss
             threads = process.get_num_threads()
 
-            message = ("Interval: {0[interv]}, CPU: {0[cpu]}%, "
-                       "RAM: {0[ram]}%, RAM: {0[ram_b]} bytes, "
-                       "threads: {0[threads]}")
-
             params = dict(
-                id=self.comparison_build,
-                interv=interval,
                 cpu=cpu,
                 ram=ram,
                 ram_b=ram_bytes,
                 threads=threads
             )
+            avg_counter.update(params)
+
+            message = ("Interval: {0[interv]}, CPU: {0[cpu]:.2f}%, "
+                       "RAM: {0[ram]:.2f}%, RAM: {0[ram_b]} bytes, "
+                       "threads: {0[threads]}")
+
+            params.update(dict(
+                id=self.comparison_build,
+                interv=interval,
+            ))
             self.sample_logger.info(message.format(params))
 
             db.execute("INSERT INTO sample VALUES "
@@ -122,6 +128,19 @@ class Sampler(object):
             fail_with_error("Unable to start video playback "
                             "for unknown reason")
 
+        # Updating comparison build overview with average values
+        intervals_num = next(interval_counter)
+
+        if intervals_num:
+            for key, value in avg_counter.iteritems():
+                avg_counter[key] = ("{0:.2f}"
+                                    .format(value / float(intervals_num)))
+
+            avg_counter['id'] = self.comparison_build
+            db.execute("INSERT INTO overview VALUES "
+                       "(:id, :cpu, :ram, :threads, :ram_b)",
+                       avg_counter)
+
         return self
 
 
@@ -132,7 +151,7 @@ def compare():
     """
 
     cursor = db.execute("INSERT INTO comparison (movie, ready) VALUES (?, ?)",
-                        (options.movie, False))
+                        (os.path.basename(options.movie), False))
 
     comparison = cursor.lastrowid
 
@@ -150,14 +169,17 @@ def compare():
         dict(
             name='cpu',
             title="CPU comparison",
+            ylabel="CPU load, %",
         ),
         dict(
             name='ram',
             title="RAM comparison",
+            ylabel="RAM load, %",
         ),
         dict(
             name='threads',
             title="Threads count comparison",
+            ylabel="Threads count",
         ),
     ]
 
@@ -165,9 +187,11 @@ def compare():
         png_path = '{0}/{1}.png'.format(comparison, plot_data['name'])
         plot = Plot(png=png_path, title=plot_data['title'])
 
+        plot.set_labels("Time, s", plot_data['ylabel'])
+
         # Draw a plot for each specific VLC version
 
-        counter = itertools.count(1)
+        style_counter = itertools.count(1)
 
         graph_list = []
 
@@ -188,7 +212,7 @@ def compare():
 
             graph_list.append(dict(
                 title="VLC {0}".format(sampler.version),
-                style=next(counter),
+                style=next(style_counter),
                 points=points,
             ))
 

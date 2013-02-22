@@ -2,6 +2,8 @@
 
 import os
 
+from datetime import datetime
+
 from flask import Flask, render_template, send_from_directory, abort
 
 from ..core import __version__
@@ -32,11 +34,13 @@ def index():
 def comparison(comparison_id=None):
     context = {}
 
-    # Loading menu
-    db.row_factory()
+    comparison = None
 
-    cursor = db.query(("SELECT c.id, c.performed, "
-                       "    GROUP_CONCAT(b.version, ', ') AS versions "
+    # Fetching main menu
+
+    db.row_factory()
+    cursor = db.query(("SELECT c.id, c.movie, c.performed, "
+                       "    GROUP_CONCAT(b.version, ' vs. ') AS versions "
                        "FROM comparison c, build b, comparison_build cb "
                        "WHERE c.id=cb.comparison_id "
                        "    AND b.version=cb.build_version "
@@ -44,33 +48,42 @@ def comparison(comparison_id=None):
                        "GROUP BY c.id "
                        "ORDER BY c.performed DESC"), [True])
 
-    menu = [{
-        'id': cid,
-        'title': versions,
-        'is_active': comparison_id == unicode(cid),
-    } for cid, performed, versions in cursor]
+    dt_format_from, dt_format_to = ('%Y-%m-%d %H:%M:%S',
+                                    '%b %d %Y, %H:%M')
 
-    comparison = None
+    menu = []
+    for index, (comp_id, movie, performed, versions) in enumerate(cursor):
+        menu_entry = {
+            'id': comp_id,
+            'versions': versions,
+            'performed': (datetime
+                          .strptime(performed, dt_format_from)
+                          .strftime(dt_format_to)),
+        }
+
+        if (comparison_id is None and index == 0
+                or unicode(comp_id) == comparison_id):
+            menu_entry.update({
+                'movie': movie,
+                'is_active': True,
+            })
+            comparison = menu_entry
+
+        menu.append(menu_entry)
 
     if menu:
-        if comparison_id is None:
-            comparison_id = menu[0]['id']
-
-        db.row_factory(dict_factory)
-
-        # Loading comparison
-        cursor = db.query(("SELECT c.*, "
-                           "    GROUP_CONCAT(b.version, ', ') AS versions "
-                           "FROM comparison c, build b, comparison_build cb "
-                           "WHERE cb.comparison_id=c.id "
-                           "    AND cb.build_version=b.version "
-                           "    AND c.id=? AND c.ready=?"
-                           "GROUP BY c.id"),
-                          [comparison_id, True])
-        comparison = cursor.fetchone()
-
         if comparison is None:
             abort(404)
+
+        db.row_factory(dict_factory)
+        # Fetching comparison overviews
+        context['overviews'] = db.query(
+            ("SELECT cb.build_version AS version, o.* "
+             "FROM overview o, comparison_build cb "
+             "WHERE o.comparison_build_id=cb.id "
+             "    AND cb.comparison_id=? "
+             "ORDER BY cb.build_version"),
+            [comparison['id']])
 
     context.update({
         'version': __version__,

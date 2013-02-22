@@ -19,11 +19,21 @@ CREATE TABLE IF NOT EXISTS comparison (
     performed DATE DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS overview (
+    comparison_build_id INTEGER,
+    avg_cpu FLOAT,
+    avg_ram FLOAT,
+    avg_threads FLOAT,
+    avg_ram_bytes BIGINT,
+
+    FOREIGN KEY (comparison_build_id) REFERENCES comparison_build(id)
+);
+
 CREATE TABLE IF NOT EXISTS sample (
     comparison_build_id INTEGER,
     interval INTEGER,
-    cpu SMALLINT,
-    ram SMALLINT,
+    cpu FLOAT,
+    ram FLOAT,
     threads SMALLINT,
     ram_bytes BIGINT,
 
