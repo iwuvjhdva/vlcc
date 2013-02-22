@@ -86,6 +86,6 @@ def main():
     """
 
     # Initializing the core
-    initialize()
+    initialize(exit_func=lambda: abort(500))
 
     app.run()

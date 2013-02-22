@@ -21,15 +21,19 @@ logger = logging.getLogger('vlcc')
 
 argparser = argparse.ArgumentParser(description=__description__)
 
+# An exit function to call on failure
+_exit_func = lambda: sys.exit(-1)
 
-def initialize():
+
+def initialize(exit_func=None):
     """Initializes the core.
 
     @param config_path: config path string
     """
-
     from .conf import load_config
     from .db import db
+
+    global _exit_func
 
     # Adding common options to argparser
 
@@ -55,6 +59,9 @@ def initialize():
         logger.setLevel(logging.DEBUG)
         logger.info("Switched to debug mode")
 
+    if exit_func is not None:
+        _exit_func = exit_func
+
     load_config(options.config)
     db.connect()
 
@@ -79,4 +86,4 @@ def fail_with_error(message):
     exc_info = getattr(options, 'traceback', False) and any(sys.exc_info())
     logger.critical(message, exc_info=exc_info)
 
-    sys.exit(-1)
+    _exit_func()
