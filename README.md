@@ -72,7 +72,7 @@ And visit http://127.0.0.1:5000 in your favourite browser (in fact, you better r
 
 For advanced usage information, run the scripts with _--help_ option.
 
-# Failback
+### Failback
 
 Note that VLCC has failback functionality, so you don't have to repeat all the previous build states on each run.
 
