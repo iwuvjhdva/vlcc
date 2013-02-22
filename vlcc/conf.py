@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import os
+import shutil
+
 import yaml
 
 from .core import fail_with_error
@@ -17,6 +20,19 @@ def load_config(config_path):
 
     @param config_path: config path
     """
+
+    if not os.path.exists(config_path):
+        # Copying default config into the current working dir
+
+        cfg_path = os.path.join(os.path.dirname(__file__), 'misc/config.yaml')
+
+        try:
+            shutil.copy2(cfg_path, '.')
+        except OSError:
+            pass
+        else:
+            config_path = './config.yaml'
+
     try:
         cfg = yaml.load(file(config_path))
     except IOError:
