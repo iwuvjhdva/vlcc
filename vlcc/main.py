@@ -73,7 +73,7 @@ def main():
                         .format(params))
 
     # Building
-    pool = Pool()
+    pool = Pool(len(options.versions))
     pool.map_async(build, options.versions).get(timeout=sys.maxint)
 
     # Uncomment for building sequentially
