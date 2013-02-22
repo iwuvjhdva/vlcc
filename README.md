@@ -34,7 +34,7 @@ Well, for now your system was enriched with the vlcc lib and two binaries:
 
 Configuration
 -------------
-In order to run, debootstrap, gnuplot and wget packages are required by VLCC runner script (_vlcc-run_).
+In order to run, debootstrap, gnuplot and wget packages are required by VLCC runner script (i. e. _vlcc-run_).
 
 The script will warn you If any of these packages are absent.
 
