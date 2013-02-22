@@ -25,7 +25,7 @@ class Plot(object):
                                              stdin=subprocess.PIPE,
                                              stdout=subprocess.PIPE)
         if png is not None:
-            self.img_path = os.path.join(config['static_dir'], 'img', png)
+            self.img_path = os.path.join(config['image_dir'], png)
             self.command("set term pngcairo enhanced size 800, 600")
             self.command('set output "{0}"'.format(self.img_path))
 

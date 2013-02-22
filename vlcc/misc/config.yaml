@@ -2,7 +2,7 @@
 
 db: ./vlcc.db
 download_url: http://download.videolan.org/pub/videolan/vlc/
-static_dir: ./static/
+image_dir: ./images/
 
 versions:
     1.1.3:

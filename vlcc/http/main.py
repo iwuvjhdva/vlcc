@@ -16,11 +16,11 @@ __all__ = ['main']
 app = Flask(__name__)
 
 
-# Static data
+# Images storage
 @app.route('/static/img/<path:filename>')
 def image(filename):
-    image_path = os.path.join(os.path.abspath(config['static_dir']), 'img')
-    return send_from_directory(image_path, filename)
+    image_dir = os.path.abspath(config['image_dir'])
+    return send_from_directory(image_dir, filename)
 
 
 @app.route('/')
