@@ -38,7 +38,7 @@ In order to run, debootstrap, gnuplot and wget packages are required by VLCC run
 
 The script will warn you If any of these packages are absent.
 
-Configuration file (usually config.yaml) can be specified with -c or --config option to both _vlcc-run_ and _vlcc-http_ scripts.
+Configuration file (usually config.yaml) can be specified with _-c_ or _--config_ option to both _vlcc-run_ and _vlcc-http_ scripts.
 
 If you don't have one, both scripts will try to create its basic reincarnation on first run in current directory.
 
@@ -70,7 +70,7 @@ $ vlcc-http
 ```
 And visit http://127.0.0.1:5000 in your favourite browser (in fact, you better run it with Chrome or Firefox :-) ).
 
-For advanced usage information, run the scripts with --help option.
+For advanced usage information, run the scripts with _--help_ option.
 
 # Failback
 
