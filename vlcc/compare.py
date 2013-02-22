@@ -4,6 +4,7 @@ import collections
 import itertools
 
 import os
+import shutil
 import subprocess
 
 import psutil
@@ -43,30 +44,38 @@ class Sampler(object):
         self.comparison_build = cursor.lastrowid
 
     def link(self):
-        """Hardlinks the dummy player and the video into the jail.
+        """Copies and hardlinks the dummy player and the video into the jail.
         """
-
-        # TODO: copy files to build_dir before making links as hard
-        # links cannot cross filesystems
 
         misc = os.path.join(os.path.dirname(__file__), 'misc/')
         chdir = self.jail.chroot_dir + '/'
 
-        # Hardlinks (src, dest) tuples
-        hardlinks = (
+        # Copies (src, dest) tuples
+        copies = (
             (misc + 'play.py', chdir + 'play.py'),
             (misc + 'vlc.py', chdir + 'vlc.py'),
-            (os.path.abspath(options.movie), chdir + self.movie_filename),
         )
 
-        for src, dest in hardlinks:
+        for src, dest in copies:
             if not os.path.exists(dest):
                 try:
-                    os.link(src, dest)
-                except OSError as e:
-                    fail_with_error("Unable to create hard link from {0} to "
+                    shutil.copy2(src, dest)
+                except IOError as e:
+                    fail_with_error("Unable to copy from {0} to "
                                     "{1}, the message was: `{2}`"
                                     .format(src, dest, e.message))
+
+        # Movie hardlink src and dest
+        src, dest = (os.path.abspath(options.movie),
+                     chdir + self.movie_filename)
+
+        if not os.path.exists(dest):
+            try:
+                os.link(src, dest)
+            except OSError as e:
+                fail_with_error("Unable to create hard link from {0} to "
+                                "{1}, the message was: `{2}`"
+                                .format(src, dest, e.message))
 
     def play(self):
         """Runs the dummy player.
