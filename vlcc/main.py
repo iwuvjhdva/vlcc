@@ -53,6 +53,13 @@ def main():
         fail_with_error("Please install {0} to run this script"
                         .format(", ".join(dependencies)))
 
+    # Checking gnuplot's PNG support
+    status, _ = commands.getstatusoutput('gnuplot -e "set terminal pngcairo"')
+
+    if status != 0:
+        fail_with_error("gnuplot doesn't support PNG output, "
+                        "please install gnuplot-x11")
+
     # Creating build directory
     try:
         os.makedirs(options.build_dir)
