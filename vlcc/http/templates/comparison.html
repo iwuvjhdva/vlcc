@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
+{% if comparison %}
 VLC {{ comparison.versions }} comparison &#151; {{ comparison.performed }}
+{% else %}
+No comparisons found
+{% endif %}
 {% endblock %}
 
 {% block content %}
