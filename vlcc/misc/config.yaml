@@ -47,3 +47,26 @@ versions:
             - liba52-0.7.4-dev
             - liblua5.1-0-dev
             - lua5.1
+    2.0.5:
+        distr: wheezy
+        dependencies:
+            - libdbus-1-dev
+            - libmad0-dev
+            - libavcodec-dev
+            - libavformat-dev
+            - libswscale-dev
+            - libpostproc-dev
+            - libxcb1-dev
+            - libxcb-shm0-dev
+            - libxcb-xv0-dev
+            - libx11-xcb-dev
+            - libglu1-mesa-dev
+            - libdbus-1-dev
+            - libqt4-dev
+            - libgcrypt11-dev
+            - libxcb-composite0-dev
+            - libasound2-dev
+            - zlib1g-dev
+            - liba52-0.7.4-dev
+            - liblua5.1-0-dev
+            - lua5.1
