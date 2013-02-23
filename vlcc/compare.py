@@ -4,7 +4,6 @@ import collections
 import itertools
 
 import os
-import shutil
 import subprocess
 
 import psutil
@@ -43,39 +42,17 @@ class Sampler(object):
 
         self.comparison_build = cursor.lastrowid
 
-    def link(self):
-        """Copies and hardlinks the dummy player and the video into the jail.
+    def prepare(self):
+        """Copies and hardlinks the dummy player files and the movie into
+        the jail.
         """
 
         misc = os.path.join(os.path.dirname(__file__), 'misc/')
-        chdir = self.jail.chroot_dir + '/'
 
-        # Copies (src, dest) tuples
-        copies = (
-            (misc + 'play.py', chdir + 'play.py'),
-            (misc + 'vlc.py', chdir + 'vlc.py'),
-        )
+        for filename in ['play.py', 'vlc.py']:
+            self.jail.copy(misc + filename, filename)
 
-        for src, dest in copies:
-            if not os.path.exists(dest):
-                try:
-                    shutil.copy2(src, dest)
-                except IOError as e:
-                    fail_with_error("Unable to copy from {0} to "
-                                    "{1}, the message was: `{2}`"
-                                    .format(src, dest, e.message))
-
-        # Movie hardlink src and dest
-        src, dest = (os.path.abspath(options.movie),
-                     chdir + self.movie_filename)
-
-        if not os.path.exists(dest):
-            try:
-                os.link(src, dest)
-            except OSError as e:
-                fail_with_error("Unable to create hard link from {0} to "
-                                "{1}, the message was: `{2}`"
-                                .format(src, dest, e.message))
+        self.jail.link(options.movie, self.movie_filename)
 
     def play(self):
         """Runs the dummy player.
@@ -95,7 +72,7 @@ class Sampler(object):
         performance/resource related parameters while playing a movie.
         """
 
-        self.link()
+        self.prepare()
         self.play()
 
         process = psutil.Process(self.process.pid)

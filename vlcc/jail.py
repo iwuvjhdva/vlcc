@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import shutil
 
 import subprocess
 
@@ -25,6 +26,52 @@ class Jail(object):
             os.makedirs(self.log_dir)
         except OSError:
             pass
+
+    def get_path(self, inner_path, *rest):
+        """Converts a path inside the jail into root FS path.
+
+        @param inner_path: path inside the jail
+        @param rest: additional path components to join
+        """
+
+        if inner_path.startswith('/'):
+            inner_path = inner_path[1:]
+
+        return os.path.join(self.chroot_dir, inner_path, *rest)
+
+    def copy(self, src, dest):
+        """Copies a file into the jail.
+
+        @param src: source path
+        @param dest: destination path inside the jail
+        """
+
+        dest = self.get_path(dest)
+
+        if not os.path.exists(dest):
+            try:
+                shutil.copy2(src, dest)
+            except IOError as e:
+                fail_with_error("Unable to copy from {0} to "
+                                "{1}, the message was: `{2}`"
+                                .format(src, dest, e.message))
+
+    def link(self, src, dest):
+        """Hardlinks a file into the jail.
+
+        @param src: source path
+        @param dest: destination path inside the jail
+        """
+
+        dest = self.get_path(dest)
+
+        if not os.path.exists(dest):
+            try:
+                os.link(src, dest)
+            except OSError as e:
+                fail_with_error("Unable to create hard link from {0} to "
+                                "{1}, the message was: `{2}`"
+                                .format(src, dest, e.message))
 
     def exec_command(self, command, async=False, **popen_kwargs):
         """Executes a command.

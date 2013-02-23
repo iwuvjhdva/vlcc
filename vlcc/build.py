@@ -109,7 +109,7 @@ class Builder(object):
         self.build_logger.info("Unpacking the downloaded archive")
 
         command = ['tar', '-C',
-                   os.path.join(self.jail.chroot_dir, 'usr/local/src/'),
+                   self.jail.get_path('/usr/local/src/'),
                    '-xf', self.archive_path]
 
         self.jail.exec_command(command)
