@@ -185,6 +185,9 @@ class Jail(object):
 
         command += [self.version_config['distr'], self.chroot_dir]
 
+        if 'mirror' in config:
+            command.append(config['mirror'])
+
         self.log_command(command, log_to='debootstrap.log',
                          log_message="Creating chroot jail for VLC")
 

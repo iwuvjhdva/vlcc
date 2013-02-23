@@ -3,6 +3,7 @@
 db: ./vlcc.db
 download_url: http://download.videolan.org/pub/videolan/vlc/
 image_dir: ./images/
+mirror: http://mirror.yandex.ru/debian
 
 versions:
     1.1.3:
