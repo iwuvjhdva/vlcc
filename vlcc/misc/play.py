@@ -12,7 +12,7 @@ import vlc
 
 
 if __name__ == "__main__":
-    instance = vlc.Instance()
+    instance = vlc.Instance('--vout=x11')
 
     player = instance.media_player_new()
 
@@ -30,4 +30,4 @@ if __name__ == "__main__":
         exit(-1)
 
     while player.is_playing():
-        time.sleep(1.)
+        time.sleep(.1)
