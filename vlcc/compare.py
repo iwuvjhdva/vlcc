@@ -65,6 +65,49 @@ class Sampler(object):
                                              async=True, userspec='vlcc:vlcc',
                                              stdout=subprocess.PIPE)
 
+    def create_overview(self):
+        """Saves comparison build overview.
+        """
+
+        # Updating the overview with average values
+        intervals_num = next(self.interval_counter)
+
+        if intervals_num:
+            for key, value in self.overview_counter.iteritems():
+                self.overview_counter[key] = ("{0:.2f}"
+                                              .format(value /
+                                                      float(intervals_num)))
+
+        # Memory leaks
+        mtrace_path = self.jail.get_path('/home/vlcc/mtrace.txt')
+
+        if os.path.exists(mtrace_path):
+            leaks_found = False
+
+            with open(mtrace_path, 'rt') as mtrace_file:
+                for line in mtrace_file:
+                    if leaks_found and line.startswith('0x'):
+                        self.overview_counter.update(dict(
+                            leaks_num=1,
+                            leaks_size=int(line.split()[1], 0),
+                        ))
+                    else:
+                        if line.startswith("No memory leaks"):
+                            break
+                        elif line.startswith("Memory not freed"):
+                            leaks_found = True
+        else:
+            self.sample_logger.warning("Memory leaks trace wasn't created "
+                                       "for unknown reason, memory leaks "
+                                       "info is not available")
+
+        # Updating the DB
+        self.overview_counter['id'] = self.comparison_build
+        db.execute("INSERT INTO overview VALUES "
+                   "(:id, :cpu, :ram, :threads, :ram_b, "
+                   ":leaks_num, :leaks_size)",
+                   self.overview_counter)
+
     def run(self):
         """Runner method.
 
@@ -77,11 +120,11 @@ class Sampler(object):
 
         process = psutil.Process(self.process.pid)
 
-        interval_counter = itertools.count()
-        avg_counter = collections.Counter()
+        self.interval_counter = itertools.count()
+        self.overview_counter = collections.Counter()
 
         while self.process.poll() is None:
-            interval = next(interval_counter)
+            interval = next(self.interval_counter)
             cpu = process.get_cpu_percent(interval=1.)
             ram = process.get_memory_percent()
             ram_bytes = process.get_memory_info().rss
@@ -93,10 +136,10 @@ class Sampler(object):
                 ram_b=ram_bytes,
                 threads=threads
             )
-            avg_counter.update(params)
+            self.overview_counter.update(params)
 
             message = ("Interval: {0[interv]}, CPU: {0[cpu]:.2f}%, "
-                       "RAM: {0[ram]:.2f}%, RAM: {0[ram_b]} bytes, "
+                       "RAM: {0[ram]:.2f}%, {0[ram_b]} bytes, "
                        "threads: {0[threads]}")
 
             params.update(dict(
@@ -114,18 +157,7 @@ class Sampler(object):
             fail_with_error("Unable to start video playback "
                             "for unknown reason")
 
-        # Updating comparison build overview with average values
-        intervals_num = next(interval_counter)
-
-        if intervals_num:
-            for key, value in avg_counter.iteritems():
-                avg_counter[key] = ("{0:.2f}"
-                                    .format(value / float(intervals_num)))
-
-            avg_counter['id'] = self.comparison_build
-            db.execute("INSERT INTO overview VALUES "
-                       "(:id, :cpu, :ram, :threads, :ram_b)",
-                       avg_counter)
+        self.create_overview()
 
         return self
 

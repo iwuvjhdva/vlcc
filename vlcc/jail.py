@@ -192,4 +192,4 @@ class Jail(object):
                          log_message="Creating chroot jail for VLC")
 
         # Creating vlcc user
-        self.exec_chroot(['useradd', 'vlcc'])
+        self.exec_chroot(['useradd', '-m', 'vlcc'])

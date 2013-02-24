@@ -24,6 +24,8 @@ No comparisons found
         <th>Avg. RAM usage, %</th>
         <th>Avg. RAM usage, bytes</th>
         <th>Avg. threads count</th>
+        <th>Rough leaks number</th>
+        <th>Rough leaks size</th>
     </thead>
     <tbody>
         {% for overview in overviews %}
@@ -33,6 +35,8 @@ No comparisons found
             <td>{{ overview.avg_ram }}</td>
             <td>{{ overview.avg_ram_bytes|round|int }}</td>
             <td>{{ overview.avg_threads|round|int }}</td>
+            <td>{{ overview.leaks_num }}</td>
+            <td>{{ overview.leaks_size }}</td>
         </tr>
         {% endfor %}
     </tbody>

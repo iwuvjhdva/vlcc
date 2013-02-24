@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS overview (
     avg_ram FLOAT,
     avg_threads FLOAT,
     avg_ram_bytes BIGINT,
+    leaks_num BIGINT,
+    leaks_size BIGINT,
 
     FOREIGN KEY (comparison_build_id) REFERENCES comparison_build(id)
 );
