@@ -12,7 +12,7 @@ from distutils.command.build_py import build_py
 
 setup(
     name="vlcc",
-    version='0.01',
+    version='0.02',
     author="Konstantin Alexandrov",
     author_email="iwuvjhdva@gmail.com",
     description="VLC versions measurement and comparison tool",

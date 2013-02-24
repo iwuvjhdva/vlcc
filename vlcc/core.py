@@ -7,7 +7,7 @@ import logging
 
 
 __description__ = "VLC versions measurement and comparison tool"
-__version__ = "0.01"
+__version__ = "0.02"
 
 
 __all__ = ['options', 'logger', 'initialize', 'get_child_logger',
